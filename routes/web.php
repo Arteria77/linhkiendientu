@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
+use App\Http\Controllers\User\ChatController as UserChatController;
+use App\Http\Controllers\Admin\ChatController as AdminChatController;
 
 // Trang chủ & Danh mục
 Route::get('/', [CategoryController::class, 'index'])->name('welcome');
@@ -38,6 +40,13 @@ Route::post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
     return back()->with('message', 'Đã gửi lại liên kết xác thực vào email của bạn!');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
+
+// --- CHỨC NĂNG CHAT (Chỉ cần đăng nhập, KHÔNG bắt buộc xác thực email) ---
+Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
+    Route::get('/chat/messages', [UserChatController::class, 'getMessages'])->name('chat.messages');
+    Route::post('/chat/send', [UserChatController::class, 'send'])->name('chat.send');
+});
 
 
 // Chức năng Giỏ hàng & Thanh toán (Bắt buộc phải đăng nhập và ĐÃ XÁC THỰC EMAIL)
@@ -77,7 +86,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-// Route nhận IPN từ MoMo (Nằm ngoài nhóm auth/verified vì MoMo server gọi trực tiếp vào)
+// Route nhận IPN từ MoMo
 Route::post('/payment/momo/ipn', [MomoController::class, 'ipn'])->name('payment.momo.ipn');
 
 // Trang Quản trị (Admin)
@@ -88,4 +97,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/orders', [AdminController::class, 'orders'])->name('orders.index');
     Route::post('/orders/{order}/status', [AdminController::class, 'updateOrderStatus'])->name('orders.update-status');
     Route::get('/sales', [AdminController::class, 'sales'])->name('sales.index');
+    Route::get('/chat/users', [AdminChatController::class, 'getUsers'])->name('chat.users');
+    Route::get('/chat/messages/{userId}', [AdminChatController::class, 'getMessages'])->name('chat.messages');
+    Route::post('/chat/send', [AdminChatController::class, 'send'])->name('chat.send');
 });
