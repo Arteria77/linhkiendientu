@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Linh Kiện Điện Tử</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    {{-- Chống lưu cache trang khi bấm nút Back (Tránh hiển thị nhầm trạng thái cũ sau khi đăng xuất) --}}
+    <script>
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
 </head>
 <body>
     {{-- Thanh điều hướng --}}
@@ -15,15 +24,30 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
+                <ul class="navbar-nav me-auto align-items-center">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('categories.index') }}">Danh mục linh kiện</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('cart.index') }}">Giỏ hàng</a>
-                    </li>
+
+                    @auth
+                        @if(Auth::user()->role === 'admin')
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('admin.dashboard') }}">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('admin.users.index') }}">Người dùng</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('admin.orders.index') }}">Đơn hàng</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('admin.sales.index') }}">Doanh số</a>
+                            </li>
+                        @endif
+                    @endauth
                 </ul>
-                <ul class="navbar-nav ms-auto">
+
+                <ul class="navbar-nav ms-auto align-items-center">
                     @auth
                         <li class="nav-item">
                             <span class="nav-link text-light">Xin chào, {{ Auth::user()->name }}</span>

@@ -1,4 +1,5 @@
 <?php 
+
 namespace App\Services; 
 
 use App\Models\Order; 
@@ -17,7 +18,7 @@ class GHNOrderService
             $itemWeight = (int) ($item->product->weight ?? 200); 
             $weight += $itemWeight * (int) $item->quantity; 
             $items[] = [ 
-                'name' => $item->product->name ?? 'Sản phẩm', 
+                'name' => $item->product->name ?? ($item->product_name ?? 'Sản phẩm'), 
                 'quantity' => (int) $item->quantity, 
                 'price' => (int) $item->price, 
                 'weight' => $itemWeight, 
@@ -28,7 +29,7 @@ class GHNOrderService
             'payment_type_id' => 2, 
             'note' => 'Đơn hàng #' . $order->id, 
             'required_note' => 'KHONGCHOXEMHANG', 
-            'to_name' => $order->name, 
+            'to_name' => $order->fullname, // ✔️ Đã sửa từ $order->name thành $order->fullname
             'to_phone' => $order->phone, 
             'to_address' => $order->address, 
             'to_ward_code' => (string) $order->to_ward_code, 

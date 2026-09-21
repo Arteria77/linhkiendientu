@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -10,9 +11,15 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware) {
-        // Cấu hình middleware tại đây (ví dụ: web, api)
+    ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->alias([
+            'admin' => AdminMiddleware::class,
+        ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'payment/momo/ipn',
+        ]);
     })
-    ->withExceptions(function (Exceptions $exceptions) {
-        // Cấu hình xử lý ngoại lệ tại đây
+    ->withExceptions(function (Exceptions $exceptions): void {
+        //
     })->create();

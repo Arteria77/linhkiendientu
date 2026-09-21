@@ -20,6 +20,8 @@ return new class extends Migration
             $table->text('address');
             $table->string('country')->default('Việt Nam');
             $table->string('province');
+            $table->string('district')->nullable(); // Thêm cột lưu Tên Quận/Huyện
+            $table->string('ward')->nullable();     // Thêm cột lưu Tên Phường/Xã
             $table->text('note')->nullable();
             $table->string('payment_method'); // cod, banking
             $table->decimal('total_price', 15, 2);

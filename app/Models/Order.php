@@ -17,6 +17,8 @@ class Order extends Model
         'address',
         'country',
         'province',
+        'district',
+        'ward',
         'note',
         'payment_method',
         'total_price',

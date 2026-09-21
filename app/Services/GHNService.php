@@ -74,6 +74,21 @@ class GHNService
         ]); 
     } 
 
+    /**
+     * Tính tổng trọng lượng sản phẩm từ giỏ hàng (khớp với OrderController đang gọi)
+     */
+    public function productWeight($cart)
+    {
+        $totalWeight = 0;
+        foreach ($cart as $item) {
+            // Mặc định mỗi sản phẩm nặng 500 gram nếu chưa thiết lập trọng lượng riêng
+            $weight = $item['weight'] ?? 500; 
+            $totalWeight += $weight * ($item['quantity'] ?? 1);
+        }
+        
+        return max($totalWeight, 20); // Đảm bảo trọng lượng tối thiểu gửi sang GHN
+    }
+
     public function packageParameters($weight) 
     {
         return [

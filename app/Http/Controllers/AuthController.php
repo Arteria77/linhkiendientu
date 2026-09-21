@@ -55,12 +55,20 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
+        $user = User::where('email', $credentials['email'])->first();
+
+        if ($user && $user->is_locked) {
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khoá.',
+            ]);
+        }
+
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
             // Kiểm tra phân quyền role sau khi đăng nhập
             if (Auth::user()->role === 'admin') {
-                return redirect()->route('categories.index');
+                return redirect()->route('admin.dashboard');
             }
 
             return redirect()->route('welcome');

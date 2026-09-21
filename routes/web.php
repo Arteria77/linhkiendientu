@@ -1,10 +1,13 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\User\GHNController;
+use App\Http\Controllers\User\OrderController;
+use App\Http\Controllers\User\MomoController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -22,18 +25,15 @@ Route::post('register', [AuthController::class, 'register'])->name('register.pos
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
 // --- CÁC ROUTE XÁC THỰC EMAIL ---
-// 1. Hiển thị thông báo yêu cầu xác thực email
 Route::get('/email/verify', function () {
     return view('auth.verify-email');
 })->middleware('auth')->name('verification.notice');
 
-// 2. Xử lý khi người dùng nhấp vào link gửi về email
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
     $request->fulfill();
     return redirect()->route('welcome')->with('success', 'Xác thực email thành công!');
 })->middleware(['auth', 'signed'])->name('verification.verify');
 
-// 3. Gửi lại email xác thực
 Route::post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
     return back()->with('message', 'Đã gửi lại liên kết xác thực vào email của bạn!');
@@ -58,6 +58,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/thanh-cong/{id}', [CheckoutController::class, 'success'])->name('success');
     });
 
+    // Xử lý đơn hàng và thanh toán MoMo (User)
+    Route::prefix('user')->name('user.')->group(function () {
+        Route::post('/orders/process', [OrderController::class, 'processPayment'])->name('orders.process');
+        Route::get('/orders', [OrderController::class, 'orderHistory'])->name('orders.index');
+        Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+        Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+        Route::get('/orders/momo/{order}/start', [MomoController::class, 'start'])->name('orders.momo.start');
+        Route::get('/orders/momo/callback', [MomoController::class, 'callback'])->name('payment.momo.callback');
+    });
+
     // GHN API Routes (Lấy địa chỉ & Tính phí vận chuyển)
     Route::prefix('locations')->name('locations.')->group(function () {
         Route::get('/provinces', [GHNController::class, 'getProvinces'])->name('provinces');
@@ -67,12 +77,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
+// Route nhận IPN từ MoMo (Nằm ngoài nhóm auth/verified vì MoMo server gọi trực tiếp vào)
+Route::post('/payment/momo/ipn', [MomoController::class, 'ipn'])->name('payment.momo.ipn');
+
 // Trang Quản trị (Admin)
-Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        if (Auth::user()->role !== 'admin') {
-            return redirect('/')->with('error', 'Bạn không có quyền truy cập!');
-        }
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/users', [AdminController::class, 'users'])->name('users.index');
+    Route::post('/users/{user}/toggle-lock', [AdminController::class, 'toggleUserLock'])->name('users.toggle-lock');
+    Route::get('/orders', [AdminController::class, 'orders'])->name('orders.index');
+    Route::post('/orders/{order}/status', [AdminController::class, 'updateOrderStatus'])->name('orders.update-status');
+    Route::get('/sales', [AdminController::class, 'sales'])->name('sales.index');
 });

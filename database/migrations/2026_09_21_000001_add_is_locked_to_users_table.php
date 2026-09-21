@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->integer('to_district_id')->nullable()->after('address');
-            $table->string('to_ward_code')->nullable()->after('to_district_id');
+        Schema::table('users', function (Blueprint $table) {
+            $table->boolean('is_locked')->default(false)->after('role');
         });
     }
 
@@ -22,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn(['to_district_id', 'to_ward_code']);
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('is_locked');
         });
     }
 };

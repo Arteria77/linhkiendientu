@@ -28,7 +28,7 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Giỏ hàng của bạn đang trống!');
         }
 
-        // 1. Validate dữ liệu
+        // 1. Validate dữ liệu (Đã thêm 'momo' vào in:cod,banking,momo)
         $request->validate([
             'fullname'       => 'required|string|max:255',
             'phone'          => 'required|regex:/^[0-9]{10}$/',
@@ -37,7 +37,7 @@ class CheckoutController extends Controller
             'province_id'    => 'required|integer',
             'to_district_id' => 'required|integer',
             'to_ward_code'   => 'required|string',
-            'payment_method' => 'required|in:cod,banking',
+            'payment_method' => 'required|in:cod,banking,momo',
             'note'           => 'nullable|string|max:500',
         ], [
             'phone.regex'             => 'Số điện thoại phải bao gồm đúng 10 chữ số.',
